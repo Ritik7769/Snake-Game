@@ -1,107 +1,89 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* Responsive Snake Game styles */
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;
+  font-family:Inter,system-ui,Arial; 
+  display:flex;align-items:center;justify-content:center;
+  background: linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  color:#fff;padding:18px;
 }
 
-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Arial', sans-serif;
-    color: white;
+.game-container{
+  width:100%;
+  max-width:520px;
+  background: rgba(255,255,255,0.06);
+  padding:18px;border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.25);
+  text-align:center;
 }
 
-.game-container {
-    text-align: center;
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+h1{margin:6px 0 12px;font-size:1.6rem}
+
+.game-info{
+  display:flex;justify-content:space-between;
+  margin-bottom:12px;font-weight:600;
 }
 
-h1 {
-    margin-bottom: 20px;
-    font-size: 2.5em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+/* canvas container keeps aspect ratio square */
+.canvas-wrap{
+  width:100%;
+  padding: 6px;
+  background: rgba(0,0,0,0.25);
+  border-radius:10px;
+  display:flex;justify-content:center;align-items:center;
 }
 
-.game-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-    font-weight: bold;
+/* canvas will be sized by JS but CSS ensures it doesn't overflow */
+#gameCanvas{
+  width:100%;
+  height:auto;
+  max-width:480px;
+  border-radius:8px;
+  display:block;
+  background: transparent;
+  border: 3px solid rgba(255,255,255,0.12);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
 }
 
-#gameCanvas {
-    border: 3px solid #fff;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.8);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+/* control buttons */
+.controls{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.controls button{
+  padding:10px 16px;border-radius:22px;border:none;cursor:pointer;
+  background:linear-gradient(45deg,#ff6b6b,#4ecdc4);color:#fff;font-weight:700;
+  transition:transform .15s;
+}
+.controls button:active{transform:translateY(1px)}
+.controls #pauseBtn{background:linear-gradient(45deg,#ffa726,#ffb74d)}
+
+/* small instructions text */
+.instructions{font-size:0.9rem;opacity:.9;margin-top:10px;color:#f1f5f9}
+
+/* touch controls for mobile */
+.touch-controls{
+  display:none;
+  margin-top:14px;
+  --btn-size:56px;
+  justify-content:center;align-items:center;
+  gap:8px;
+}
+.touch-controls .tc-row{display:flex;gap:8px;margin-top:8px;justify-content:center}
+.tc-btn{
+  width:var(--btn-size);height:var(--btn-size);border-radius:12px;border:none;
+  font-size:1.25rem;background:rgba(255,255,255,0.92);color:#111;font-weight:700;
+  box-shadow:0 6px 18px rgba(0,0,0,0.25);touch-action:manipulation;
+}
+.tc-btn:active{transform:scale(.98)}
+
+/* show touch controls on narrow screens */
+@media (max-width:600px){
+  .game-container{padding:14px}
+  #gameCanvas{max-width:360px}
+  .touch-controls{display:flex;flex-direction:column}
+  .instructions{display:none}
 }
 
-.controls {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-}
-
-button {
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: bold;
-    border: none;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-button:active {
-    transform: translateY(0);
-}
-
-.game-over {
-    background: linear-gradient(45deg, #ff4757, #ff3838);
-}
-
-.instructions {
-    margin-top: 15px;
-    font-size: 14px;
-    opacity: 0.8;
-    line-height: 1.5;
-}
-
-@media (max-width: 600px) {
-    .game-container {
-        padding: 15px;
-    }
-    
-    h1 {
-        font-size: 2em;
-    }
-    
-    #gameCanvas {
-        width: 300px;
-        height: 300px;
-    }
+/* smaller very-narrow screens */
+@media (max-width:360px){
+  .controls button{padding:8px 12px;font-size:0.9rem}
+  :root{--btn-size:48px}
 }
