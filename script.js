@@ -1,4 +1,5 @@
-/* Responsive Snake Game
+
+   /* Responsive Snake Game
    - canvas resizes to fit container
    - fixed tile count (20) for consistent gameplay across sizes
    - devicePixelRatio handled for crisp rendering
@@ -62,15 +63,11 @@ class SnakeGame {
   }
 
   resizeCanvas(){
-    // compute gridSize so canvas is square and fits container width
     const wrap = this.canvas.parentElement;
     const available = Math.min(wrap.clientWidth, window.innerHeight * 0.6);
-    // ensure at least 10px per tile
     const gs = Math.max(8, Math.floor(available / this.tileCount));
     this.gridSize = gs;
-    // set logical size (CSS size controlled by width)
     const cssSize = this.gridSize * this.tileCount;
-    // handle devicePixelRatio for crisp canvas
     const ratio = window.devicePixelRatio || 1;
     this.canvas.style.width = cssSize + 'px';
     this.canvas.style.height = cssSize + 'px';
@@ -78,9 +75,7 @@ class SnakeGame {
     this.canvas.height = cssSize * ratio;
     this.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-    // recalc tileCount may remain the same; keep snake positions valid
     this.draw();
-    // show touch controls on small screens
     if (window.innerWidth <= 600) {
       this.touchControls.setAttribute('aria-hidden','false');
       this.touchControls.style.display = 'flex';
@@ -95,7 +90,6 @@ class SnakeGame {
         e.key.toLowerCase() === 'arrowleft' || e.key.toLowerCase() === 'a' ||
         e.key.toLowerCase() === 'arrowup' || e.key.toLowerCase() === 'w' ||
         e.key.toLowerCase() === 'arrowdown' || e.key.toLowerCase() === 's')) {
-      // if game not running, pressing direction should start movement (but not start game loop)
       this.startMovementFromKey(e.key.toLowerCase());
       return;
     }
@@ -175,9 +169,9 @@ class SnakeGame {
       return;
     }
 
-    // self collision
-    for (let seg of this.snake) {
-      if (head.x === seg.x && head.y === seg.y) {
+    // ✅ fixed self collision
+    for (let i = 1; i < this.snake.length; i++) {
+      if (head.x === this.snake[i].x && head.y === this.snake[i].y) {
         this.gameOver();
         return;
       }
@@ -212,7 +206,6 @@ class SnakeGame {
     const gs = this.gridSize;
     const size = gs * this.tileCount;
 
-    // background gradient
     const g = ctx.createLinearGradient(0,0,size,size);
     g.addColorStop(0,'#1a1a2e');
     g.addColorStop(1,'#16213e');
@@ -240,7 +233,5 @@ class SnakeGame {
 // initialize on load
 window.addEventListener('load', () => {
   const game = new SnakeGame();
-
-  // expose quick controls on global for debugging
   window.snakeGame = game;
 });
