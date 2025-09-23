@@ -1,5 +1,5 @@
 
-   /* Responsive Snake Game
+/* Responsive Snake Game
    - canvas resizes to fit container
    - fixed tile count (20) for consistent gameplay across sizes
    - devicePixelRatio handled for crisp rendering
@@ -19,44 +19,40 @@ class SnakeGame {
     this.touchControls = document.getElementById('touchControls');
 
     // config
-    this.tileCount = 20;            // grid: 20x20 tiles
-    this.gridSize = 20;            // will be recalculated by resize()
+    this.tileCount = 20;            
+    this.gridSize = 20;            
     this.snake = [{x:10,y:10}];
     this.food = {x:15,y:15};
     this.dx = 0; this.dy = 0;
     this.score = 0;
     this.highScore = parseInt(localStorage.getItem('snakeHighScore') || '0', 10);
     this.gameRunning = false;
+    this.isGameOver = false;   // 🔥 new flag
     this.gameLoop = null;
-    this.stepMs = 140; // speed
+    this.stepMs = 140; 
 
     // init
     this.highScoreEl.textContent = this.highScore;
     this.bindEvents();
     this.resizeCanvas();
-    this.draw(); // initial draw
+    this.draw(); 
   }
 
   bindEvents(){
     window.addEventListener('resize', () => this.onResizeDebounced());
-    // keyboard
     document.addEventListener('keydown', (e) => this.handleKey(e));
-    // buttons
     this.startBtn.addEventListener('click', () => this.toggleStart());
     this.pauseBtn.addEventListener('click', () => this.pauseGame());
     this.resetBtn.addEventListener('click', () => this.resetGame());
-    // touch controls
     document.querySelectorAll('#touchControls [data-dir]').forEach(btn=>{
       btn.addEventListener('touchstart', (e)=>{ e.preventDefault(); this.setDirectionFromData(btn.dataset.dir); });
       btn.addEventListener('mousedown', ()=> this.setDirectionFromData(btn.dataset.dir));
     });
-    // visibility: pause when hidden
     document.addEventListener('visibilitychange', () => {
       if (document.hidden && this.gameRunning) this.pauseGame();
     });
   }
 
-  // debounced resize to avoid thrash
   onResizeDebounced(){
     clearTimeout(this._rsT);
     this._rsT = setTimeout(()=> this.resizeCanvas(), 120);
@@ -86,7 +82,8 @@ class SnakeGame {
   }
 
   handleKey(e){
-    if (!this.gameRunning && (e.key.toLowerCase() === 'arrowright' || e.key.toLowerCase() === 'd' ||
+    if (!this.gameRunning && !this.isGameOver &&
+        (e.key.toLowerCase() === 'arrowright' || e.key.toLowerCase() === 'd' ||
         e.key.toLowerCase() === 'arrowleft' || e.key.toLowerCase() === 'a' ||
         e.key.toLowerCase() === 'arrowup' || e.key.toLowerCase() === 'w' ||
         e.key.toLowerCase() === 'arrowdown' || e.key.toLowerCase() === 's')) {
@@ -110,7 +107,7 @@ class SnakeGame {
   }
 
   setDirectionFromData(dir){
-    if (!this.gameRunning) this.startGame();
+    if (!this.gameRunning && !this.isGameOver) this.startGame();
     if (dir === 'up' && this.dy !== 1){ this.dx = 0; this.dy = -1; }
     if (dir === 'down' && this.dy !== -1){ this.dx = 0; this.dy = 1; }
     if (dir === 'left' && this.dx !== 1){ this.dx = -1; this.dy = 0; }
@@ -118,26 +115,31 @@ class SnakeGame {
   }
 
   toggleStart(){
+    if (this.isGameOver) {
+      this.resetGame(); // 🔥 Game over → reset
+      return;
+    }
     if (this.gameRunning) return;
     this.startGame();
   }
 
   startGame(){
-    if (this.gameRunning) return;
+    if (this.gameRunning || this.isGameOver) return; // 🔥 Game over hone par block
     this.gameRunning = true;
     this.startBtn.textContent = 'Playing...';
-    if (this.dx === 0 && this.dy === 0) { this.dx = 1; this.dy = 0; } // default right
+    if (this.dx === 0 && this.dy === 0) { this.dx = 1; this.dy = 0; }
     this.gameLoop = setInterval(()=>{ this.update(); this.draw(); }, this.stepMs);
   }
 
   pauseGame(){
-    if (!this.gameRunning) return;
+    if (!this.gameRunning || this.isGameOver) return; // 🔥 game over pe pause disable
     this.gameRunning = false;
     clearInterval(this.gameLoop);
     this.startBtn.textContent = 'Resume';
   }
 
   resetGame(){
+    this.isGameOver = false; // 🔥 Reset flag
     this.gameRunning = false;
     clearInterval(this.gameLoop);
     this.snake = [{x: Math.floor(this.tileCount/2), y: Math.floor(this.tileCount/2)}];
@@ -163,13 +165,11 @@ class SnakeGame {
   update(){
     const head = { x: this.snake[0].x + this.dx, y: this.snake[0].y + this.dy };
 
-    // wall collision
     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount) {
       this.gameOver();
       return;
     }
 
-    // ✅ fixed self collision
     for (let i = 1; i < this.snake.length; i++) {
       if (head.x === this.snake[i].x && head.y === this.snake[i].y) {
         this.gameOver();
@@ -179,7 +179,6 @@ class SnakeGame {
 
     this.snake.unshift(head);
 
-    // eat food
     if (head.x === this.food.x && head.y === this.food.y) {
       this.score += 10;
       this.scoreEl.textContent = this.score;
@@ -195,6 +194,7 @@ class SnakeGame {
   }
 
   gameOver(){
+    this.isGameOver = true; // 🔥 set game over
     this.gameRunning = false;
     clearInterval(this.gameLoop);
     this.startBtn.textContent = 'Game Over - Restart';
@@ -212,7 +212,6 @@ class SnakeGame {
     ctx.fillStyle = g;
     ctx.fillRect(0,0,size,size);
 
-    // draw snake
     ctx.shadowBlur = 8;
     for (let i = 0; i < this.snake.length; i++){
       const s = this.snake[i];
@@ -221,7 +220,6 @@ class SnakeGame {
       ctx.fillRect(s.x * gs + 2, s.y * gs + 2, gs - 4, gs - 4);
     }
 
-    // draw food
     ctx.fillStyle = '#ff6b6b';
     ctx.shadowColor = ctx.fillStyle;
     ctx.shadowBlur = 14;
@@ -230,7 +228,6 @@ class SnakeGame {
   }
 }
 
-// initialize on load
 window.addEventListener('load', () => {
   const game = new SnakeGame();
   window.snakeGame = game;
